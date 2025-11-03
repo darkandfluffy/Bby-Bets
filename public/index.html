@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Baby Name Guess</title>
+    <style>
+      .guess-row { margin-bottom: 5px; }
+      button { margin-top: 5px; }
+    </style>
+  </head>
+  <body>
+    <h2>Baby Name Guess</h2>
+    <form id="guessForm" action="/guess" method="POST">
+      <label>Full name/email (please use the same for all return guesses):</label><br/>
+      <input name="guesser" required autocomplete="off"><br><br>
+
+      <div id="guessesContainer">
+        <!-- First row has label -->
+        <div class="guess-row">
+          <label>Baby name guess(es):</label><br/>
+          <input name="name" autocomplete="off">
+        </div>
+        <!-- Additional default rows have only input -->
+        <div class="guess-row">
+          <input name="name" autocomplete="off">
+        </div>
+        <div class="guess-row">
+          <input name="name" autocomplete="off">
+        </div>
+      </div>
+
+      <button type="button" id="addGuess">+ Add another guess</button><br><br>
+      <button type="submit">Submit all guesses</button>
+    </form>
+
+    <hr>
+
+
+    <script>
+      const container = document.getElementById('guessesContainer');
+      const addButton = document.getElementById('addGuess');
+      const form = document.getElementById('guessForm');
+
+      addButton.addEventListener('click', () => {
+        const row = document.createElement('div');
+        row.className = 'guess-row';
+        row.innerHTML = '<input name="name" autocomplete="off"> <button type="button" class="removeBtn">-</button>';
+        container.appendChild(row);
+
+        row.querySelector('.removeBtn').addEventListener('click', () => {
+          container.removeChild(row);
+        });
+      });
+
+      // Before submit, disable empty guess inputs so they aren't submitted
+      form.addEventListener('submit', () => {
+        const inputs = form.querySelectorAll('input[name="name"]');
+        inputs.forEach(input => {
+          if (!input.value.trim()) input.disabled = true;
+        });
+      });
+    </script>
+  </body>
+</html>
