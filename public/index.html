@@ -2,40 +2,263 @@
 <html>
   <head>
     <title>Baby Name Guess</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-      .guess-row { margin-bottom: 5px; }
-      button { margin-top: 5px; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Quicksand', sans-serif;
+        background: linear-gradient(135deg, #ffeef8 0%, #ffe4f3 50%, #ffd9f0 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .banner {
+        width: 100%;
+        height: 250px;
+        background: linear-gradient(135deg, #ffb3d9 0%, #ff99cc 100%);
+        border-radius: 20px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+        background-size: 30px 30px;
+        animation: float 20s linear infinite;
+      }
+
+      @keyframes float {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(50px, 50px); }
+      }
+
+      .banner img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+        border-radius: 20px;
+        z-index: 1;
+        position: relative;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      h2 {
+        color: #ff69b4;
+        text-align: center;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.2);
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #ff99cc;
+        margin-bottom: 30px;
+        font-size: 1.1em;
+      }
+
+      label {
+        color: #ff69b4;
+        font-weight: 600;
+        font-size: 1.1em;
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      input[type="text"],
+      input[name="guesser"],
+      input[name="name"] {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #ffc9e3;
+        border-radius: 12px;
+        font-family: 'Quicksand', sans-serif;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        background: #fffbfd;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #ff69b4;
+        box-shadow: 0 0 15px rgba(255, 105, 180, 0.2);
+        background: white;
+      }
+
+      .form-group {
+        margin-bottom: 25px;
+      }
+
+      .guess-row {
+        margin-bottom: 12px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .guess-row input {
+        flex: 1;
+      }
+
+      button {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 12px;
+        font-family: 'Quicksand', sans-serif;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      button[type="submit"] {
+        background: linear-gradient(135deg, #ff69b4 0%, #ff85c1 100%);
+        color: white;
+        width: 100%;
+        padding: 18px;
+        font-size: 1.2em;
+        box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
+        margin-top: 10px;
+      }
+
+      button[type="submit"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 105, 180, 0.4);
+      }
+
+      #addGuess {
+        background: #fff0f8;
+        color: #ff69b4;
+        border: 2px solid #ffc9e3;
+        width: 100%;
+      }
+
+      #addGuess:hover {
+        background: #ffe4f3;
+        border-color: #ff69b4;
+      }
+
+      .removeBtn {
+        background: #ffe4f3;
+        color: #ff69b4;
+        border: 2px solid #ffc9e3;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 1.2em;
+        min-width: 45px;
+      }
+
+      .removeBtn:hover {
+        background: #ffcce5;
+        border-color: #ff69b4;
+      }
+
+      .stats-link {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #ffe4f3;
+      }
+
+      .stats-link a {
+        color: #ff69b4;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1em;
+      }
+
+      .stats-link a:hover {
+        text-decoration: underline;
+      }
     </style>
   </head>
   <body>
-    <h2>Baby Name Guess</h2>
-    <form id="guessForm" action="/guess" method="POST">
-      <label>Full name/email (please use the same for all return guesses):</label><br/>
-      <input name="guesser" required autocomplete="off"><br><br>
+    <div class="banner">
+      <img id="bannerImgL" style="display: block;" src="baby0.png" alt="AI Baby Photo 1" onerror="this.style.display='none'">
+      <img id="bannerImg" style="display: block;" src="baby1.png" alt="AI Baby Photo 2" onerror="this.style.display='none'">
+      <img id="bannerImgR" style="display: block;" src="baby2.png" alt="AI Baby Photo 3" onerror="this.style.display='none'">
+    </div>
 
-      <div id="guessesContainer">
-        <!-- First row has label -->
-        <div class="guess-row">
-          <label>Baby name guess(es):</label><br/>
-          <input name="name" autocomplete="off">
+    <div class="container">
+      <h2>💕 Baby Name Guess 💕</h2>
+      <p class="subtitle">See if you can guess our perfect name!</p>
+
+      <form id="guessForm" action="/guess" method="POST">
+        <div class="form-group">
+          <label>Your Name or Email:</label>
+          <input name="guesser" required autocomplete="off" placeholder="e.g., Sarah Johnson">
         </div>
-        <!-- Additional default rows have only input -->
-        <div class="guess-row">
-          <input name="name" autocomplete="off">
+
+        <div class="form-group">
+          <label>Baby Name Guesses:</label>
+          <div id="guessesContainer">
+            <div class="guess-row">
+              <input name="name" autocomplete="off" placeholder="Enter a name">
+            </div>
+            <div class="guess-row">
+              <input name="name" autocomplete="off" placeholder="Enter a name">
+            </div>
+            <div class="guess-row">
+              <input name="name" autocomplete="off" placeholder="Enter a name">
+            </div>
+          </div>
         </div>
-        <div class="guess-row">
-          <input name="name" autocomplete="off">
-        </div>
+
+        <button type="button" id="addGuess">+ Add Another Guess</button>
+        <button type="submit">Submit All Guesses</button>
+      </form>
+
+      <div style="display: none;" class="stats-link">
+        <a href="/stats">📊 View All Guesses</a>
       </div>
-
-      <button type="button" id="addGuess">+ Add another guess</button><br><br>
-      <button type="submit">Submit all guesses</button>
-    </form>
-
-    <hr>
-
+    </div>
 
     <script>
+      const bannerImgL = document.getElementById('bannerImgL');
+      const imgL = new Image();
+      imgL.onload = function() {
+        bannerImgL.style.display = 'block';
+      };
+      img.src = 'baby0.png';
+      const bannerImg = document.getElementById('bannerImg');
+      const img = new Image();
+      img.onload = function() {
+        bannerImg.style.display = 'block';
+      };
+      img.src = 'baby1.png';
+      const bannerImgR = document.getElementById('bannerImgR');
+      const imgR = new Image();
+      imgR.onload = function() {
+        bannerImg.style.display = 'block';
+      };
+      imgR.src = 'baby2.png';
+
       const container = document.getElementById('guessesContainer');
       const addButton = document.getElementById('addGuess');
       const form = document.getElementById('guessForm');
@@ -43,7 +266,7 @@
       addButton.addEventListener('click', () => {
         const row = document.createElement('div');
         row.className = 'guess-row';
-        row.innerHTML = '<input name="name" autocomplete="off"> <button type="button" class="removeBtn">-</button>';
+        row.innerHTML = '<input name="name" autocomplete="off" placeholder="Enter a name"> <button type="button" class="removeBtn">✕</button>';
         container.appendChild(row);
 
         row.querySelector('.removeBtn').addEventListener('click', () => {
@@ -51,7 +274,6 @@
         });
       });
 
-      // Before submit, disable empty guess inputs so they aren't submitted
       form.addEventListener('submit', () => {
         const inputs = form.querySelectorAll('input[name="name"]');
         inputs.forEach(input => {
