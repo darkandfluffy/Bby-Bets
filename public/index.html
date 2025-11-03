@@ -247,7 +247,7 @@
     addButton.addEventListener('click', () => {
       const row = document.createElement('div');
       row.className = 'guess-row';
-      row.innerHTML = '<input class="name-guess-input" autocomplete="off" placeholder="Enter a name (can be left empty)"> <button type="button" class="removeBtn">✕</button>';
+      row.innerHTML = '<input name="name" class="name-guess-input" autocomplete="off" placeholder="Enter a name (can be left empty)"> <button type="button" class="removeBtn">✕</button>';
       container.appendChild(row);
 
       row.querySelector('.removeBtn').addEventListener('click', () => {
