@@ -210,27 +210,27 @@
     <p class="subtitle">See if you can guess our perfect name!</p>
 
     <div class="form-group">
-      <label>Your Name or Email:</label>
-      <input id="guesserName" required autocomplete="off" placeholder="e.g., Sarah Johnson">
+      <label>Full Name or Email:</label>
+      <input name="name" id="guesserName" required autocomplete="off" placeholder="ex: Jame Sanburn">
     </div>
 
     <div class="form-group">
       <label>Baby Name Guesses:</label>
       <div id="guessesContainer">
         <div class="guess-row">
-          <input class="name-guess-input" autocomplete="off" placeholder="Enter a name">
+          <input name="name" class="name-guess-input" autocomplete="off" placeholder="Enter a name">
         </div>
         <div class="guess-row">
-          <input class="name-guess-input" autocomplete="off" placeholder="Enter a name">
+          <input name="name" class="name-guess-input" autocomplete="off" placeholder="Enter a name (can be left empty)">
         </div>
         <div class="guess-row">
-          <input class="name-guess-input" autocomplete="off" placeholder="Enter a name">
+          <input name="name" class="name-guess-input" autocomplete="off" placeholder="Enter a name (can be left empty)">
         </div>
       </div>
     </div>
 
     <button type="button" id="addGuess">+ Add Another Guess</button>
-    <button id="submitBtn">Submit All Guesses</button>
+    <button type="submit" id="submitBtn">Submit All Guesses</button>
 
     <div style="display: none;" class="stats-link">
       <a href="/stats">📊 View All Guesses</a>
@@ -247,7 +247,7 @@
     addButton.addEventListener('click', () => {
       const row = document.createElement('div');
       row.className = 'guess-row';
-      row.innerHTML = '<input class="name-guess-input" autocomplete="off" placeholder="Enter a name"> <button type="button" class="removeBtn">✕</button>';
+      row.innerHTML = '<input class="name-guess-input" autocomplete="off" placeholder="Enter a name (can be left empty)"> <button type="button" class="removeBtn">✕</button>';
       container.appendChild(row);
 
       row.querySelector('.removeBtn').addEventListener('click', () => {
