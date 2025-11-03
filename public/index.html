@@ -200,9 +200,9 @@
   </head>
   <body>
     <div class="banner">
-      <img id="bannerImgL" style="display: block;" src="baby0.png" alt="AI Baby Photo 1" onerror="this.style.display='none'">
-      <img id="bannerImg" style="display: block;" src="baby1.png" alt="AI Baby Photo 2" onerror="this.style.display='none'">
-      <img id="bannerImgR" style="display: block;" src="baby2.png" alt="AI Baby Photo 3" onerror="this.style.display='none'">
+      <img id="bannerImgL" style="display: block;" src="/baby0.png" alt="AI Baby Photo 1">
+      <img id="bannerImg" style="display: block;" src="/baby1.png" alt="AI Baby Photo 2">
+      <img id="bannerImgR" style="display: block;" src="/baby2.png" alt="AI Baby Photo 3">
     </div>
 
     <div class="container">
@@ -240,25 +240,6 @@
     </div>
 
     <script>
-      const bannerImgL = document.getElementById('bannerImgL');
-      const imgL = new Image();
-      imgL.onload = function() {
-        bannerImgL.style.display = 'block';
-      };
-      img.src = 'baby0.png';
-      const bannerImg = document.getElementById('bannerImg');
-      const img = new Image();
-      img.onload = function() {
-        bannerImg.style.display = 'block';
-      };
-      img.src = 'baby1.png';
-      const bannerImgR = document.getElementById('bannerImgR');
-      const imgR = new Image();
-      imgR.onload = function() {
-        bannerImg.style.display = 'block';
-      };
-      imgR.src = 'baby2.png';
-
       const container = document.getElementById('guessesContainer');
       const addButton = document.getElementById('addGuess');
       const form = document.getElementById('guessForm');
