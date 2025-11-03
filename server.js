@@ -1,67 +1,85 @@
 import express from "express";
 import bodyParser from "body-parser";
-import fs from "fs";
+import pkg from "pg";
+import "dotenv/config";
+const { Pool } = pkg;
 
-const app = express();
-const DATA_FILE = "guesses.json";
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
-
-function loadGuesses() {
-  if (!fs.existsSync(DATA_FILE)) return [];
-  return JSON.parse(fs.readFileSync(DATA_FILE));
-}
-
-function saveGuesses(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
-
-app.post("/guess", (req, res) => {
-  const { guesser } = req.body;
-  let names = req.body.name;
-
-  if (!names) return res.redirect("/");
-
-  if (!Array.isArray(names)) names = [names];
-
-  const guesses = loadGuesses();
-
-  names.forEach(n => {
-    if (typeof n === "string") {
-      const trimmed = n.trim();
-      if (trimmed) {
-        guesses.push({ guesser, name: trimmed, time: new Date().toISOString() });
-      }
-    }
-  });
-
-  saveGuesses(guesses);
-  res.redirect("/");
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 });
 
-app.get("/stats", (req, res) => {
-  const guesses = loadGuesses();
-  const guesserMap = {};
+const app = express();
 
-  guesses.forEach(g => {
-    if (typeof g.guesser !== "string" || typeof g.name !== "string") return;
-    const guesser = g.guesser.trim();
-    const name = g.name.trim();
-    if (!guesser || !name) return;
+app.use(bodyParser.json()); // switched to JSON
+app.use(express.static("public"));
 
-    if (!guesserMap[guesser]) guesserMap[guesser] = [];
-    guesserMap[guesser].push(name);
-  });
+// Load all guesses from Postgres
+async function loadGuesses() {
+  const res = await pool.query("SELECT guesser, name_guess, time_submitted FROM guesses ORDER BY time_submitted ASC");
+  return res.rows.map(r => ({ guesser: r.guesser, name: r.name_guess, time: r.time_submitted }));
+}
 
-  let html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Baby Name Guess Stats</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
-      <style>
+// Save new guesses to Postgres (appends only)
+async function saveGuesses(newData) {
+  if (!Array.isArray(newData) || newData.length === 0) return;
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    for (const g of newData) {
+      const guesser = g.guesser?.trim?.();
+      const name = g.name?.trim?.();
+      if (guesser && name) {
+        await client.query(
+          "INSERT INTO guesses (guesser, name_guess, time_submitted) VALUES ($1, $2, NOW())",
+          [guesser, name]
+        );
+      }
+    }
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+// POST /guess receives JSON: { guesses: [{guesser, name}, ...] }
+app.post("/guess", async (req, res) => {
+  try {
+    const guesses = req.body.guesses || [];
+    await saveGuesses(guesses);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Database error");
+  }
+});
+
+app.get("/stats", async (req, res) => {
+  try {
+    const guesses = await loadGuesses();
+    const guesserMap = {};
+
+    guesses.forEach(g => {
+      if (typeof g.guesser !== "string" || typeof g.name !== "string") return;
+      const guesser = g.guesser.trim();
+      const name = g.name.trim();
+      if (!guesser || !name) return;
+
+      if (!guesserMap[guesser]) guesserMap[guesser] = [];
+      guesserMap[guesser].push(name);
+    });
+
+    let html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Baby Name Guess Stats</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+        <style>
         * {
           margin: 0;
           padding: 0;
@@ -179,43 +197,47 @@ app.get("/stats", (req, res) => {
           font-size: 1.2em;
           font-weight: 600;
         }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h2>💕 Baby Name Guesses 💕</h2>
-        <p class="subtitle">See what everyone is guessing!</p>
-        
-        <div class="total-guesses">
-          Total Guesses: ${guesses.length} from ${Object.keys(guesserMap).length} ${Object.keys(guesserMap).length === 1 ? 'person' : 'people'}
-        </div>
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h2>💕 Baby Name Guesses 💕</h2>
+          <p class="subtitle">See what everyone is guessing!</p>
+          
+          <div class="total-guesses">
+            Total Guesses: ${guesses.length} from ${Object.keys(guesserMap).length} ${Object.keys(guesserMap).length === 1 ? 'person' : 'people'}
+          </div>
 
-        <ul class="stats-list">
-  `;
-
-  for (const [guesser, names] of Object.entries(guesserMap)) {
-    html += `
-      <li class="stats-item">
-        <div class="guesser-name">${guesser}</div>
-        <div class="guess-count">${names.length} ${names.length === 1 ? 'guess' : 'guesses'}</div>
-        <div class="name-list">
-          ${names.map(name => `<span class="name-tag">${name}</span>`).join('')}
-        </div>
-      </li>
+          <ul class="stats-list">
     `;
-  }
 
-  html += `
-        </ul>
-        <div class="back-link">
-          <a href="/">← Back to Guessing Form</a>
+    for (const [guesser, names] of Object.entries(guesserMap)) {
+      html += `
+        <li class="stats-item">
+          <div class="guesser-name">${guesser}</div>
+          <div class="guess-count">${names.length} ${names.length === 1 ? 'guess' : 'guesses'}</div>
+          <div class="name-list">
+            ${names.map(name => `<span class="name-tag">${name}</span>`).join('')}
+          </div>
+        </li>
+      `;
+    }
+
+    html += `
+          </ul>
+          <div class="back-link">
+            <a href="/">← Back to Guessing Form</a>
+          </div>
         </div>
-      </div>
-    </body>
-    </html>
-  `;
+      </body>
+      </html>
+    `;
 
-  res.send(html);
+    res.send(html);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Database error");
+  }
 });
 
 const PORT = process.env.PORT || 5000;

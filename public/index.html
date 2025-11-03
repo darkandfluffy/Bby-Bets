@@ -198,69 +198,95 @@
       }
     </style>
   </head>
-  <body>
-    <div class="banner">
-      <img id="bannerImgL" style="display: block;" src="/baby0.png" alt="AI Baby Photo 1">
-      <img id="bannerImg" style="display: block;" src="/baby1.png" alt="AI Baby Photo 2">
-      <img id="bannerImgR" style="display: block;" src="/baby2.png" alt="AI Baby Photo 3">
+<body>
+  <div class="banner">
+    <img id="bannerImgL" style="display: block;" src="/baby0.png" alt="AI Baby Photo 1">
+    <img id="bannerImg" style="display: block;" src="/baby1.png" alt="AI Baby Photo 2">
+    <img id="bannerImgR" style="display: block;" src="/baby2.png" alt="AI Baby Photo 3">
+  </div>
+
+  <div class="container">
+    <h2>💕 Baby Name Guess 💕</h2>
+    <p class="subtitle">See if you can guess our perfect name!</p>
+
+    <div class="form-group">
+      <label>Your Name or Email:</label>
+      <input id="guesserName" required autocomplete="off" placeholder="e.g., Sarah Johnson">
     </div>
 
-    <div class="container">
-      <h2>💕 Baby Name Guess 💕</h2>
-      <p class="subtitle">See if you can guess our perfect name!</p>
-
-      <form id="guessForm" action="/guess" method="POST">
-        <div class="form-group">
-          <label>Your Name or Email:</label>
-          <input name="guesser" required autocomplete="off" placeholder="e.g., Sarah Johnson">
+    <div class="form-group">
+      <label>Baby Name Guesses:</label>
+      <div id="guessesContainer">
+        <div class="guess-row">
+          <input class="name-guess-input" autocomplete="off" placeholder="Enter a name">
         </div>
-
-        <div class="form-group">
-          <label>Baby Name Guesses:</label>
-          <div id="guessesContainer">
-            <div class="guess-row">
-              <input name="name" autocomplete="off" placeholder="Enter a name">
-            </div>
-            <div class="guess-row">
-              <input name="name" autocomplete="off" placeholder="Enter a name">
-            </div>
-            <div class="guess-row">
-              <input name="name" autocomplete="off" placeholder="Enter a name">
-            </div>
-          </div>
+        <div class="guess-row">
+          <input class="name-guess-input" autocomplete="off" placeholder="Enter a name">
         </div>
-
-        <button type="button" id="addGuess">+ Add Another Guess</button>
-        <button type="submit">Submit All Guesses</button>
-      </form>
-
-      <div style="display: none;" class="stats-link">
-        <a href="/stats">📊 View All Guesses</a>
+        <div class="guess-row">
+          <input class="name-guess-input" autocomplete="off" placeholder="Enter a name">
+        </div>
       </div>
     </div>
 
-    <script>
-      const container = document.getElementById('guessesContainer');
-      const addButton = document.getElementById('addGuess');
-      const form = document.getElementById('guessForm');
+    <button type="button" id="addGuess">+ Add Another Guess</button>
+    <button id="submitBtn">Submit All Guesses</button>
 
-      addButton.addEventListener('click', () => {
-        const row = document.createElement('div');
-        row.className = 'guess-row';
-        row.innerHTML = '<input name="name" autocomplete="off" placeholder="Enter a name"> <button type="button" class="removeBtn">✕</button>';
-        container.appendChild(row);
+    <div style="display: none;" class="stats-link">
+      <a href="/stats">📊 View All Guesses</a>
+    </div>
+  </div>
 
-        row.querySelector('.removeBtn').addEventListener('click', () => {
-          container.removeChild(row);
-        });
+  <script>
+    const container = document.getElementById('guessesContainer');
+    const addButton = document.getElementById('addGuess');
+    const submitBtn = document.getElementById('submitBtn');
+    const guesserInput = document.getElementById('guesserName');
+
+    // Add dynamic guess row
+    addButton.addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'guess-row';
+      row.innerHTML = '<input class="name-guess-input" autocomplete="off" placeholder="Enter a name"> <button type="button" class="removeBtn">✕</button>';
+      container.appendChild(row);
+
+      row.querySelector('.removeBtn').addEventListener('click', () => {
+        container.removeChild(row);
+      });
+    });
+
+    // Submit guesses as JSON
+    submitBtn.addEventListener('click', async () => {
+      const guesser = guesserInput.value.trim();
+      if (!guesser) return alert("Please enter your name or email.");
+
+      const inputs = container.querySelectorAll('.name-guess-input');
+      const guesses = [];
+
+      inputs.forEach(input => {
+        const name = input.value.trim();
+        if (name) guesses.push({ guesser, name });
       });
 
-      form.addEventListener('submit', () => {
-        const inputs = form.querySelectorAll('input[name="name"]');
-        inputs.forEach(input => {
-          if (!input.value.trim()) input.disabled = true;
+      if (guesses.length === 0) return alert("Please enter at least one baby name guess.");
+
+      try {
+        const res = await fetch('/guess', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ guesses })
         });
-      });
-    </script>
-  </body>
+
+        if (!res.ok) throw new Error("Network response was not ok");
+
+        alert("Guesses submitted!");
+        // Optional: clear inputs
+        inputs.forEach(i => i.value = '');
+      } catch (err) {
+        console.error(err);
+        alert("Error submitting guesses.");
+      }
+    });
+  </script>
+</body>
 </html>
