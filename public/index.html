@@ -78,7 +78,6 @@
       }
 
       .subtitle {
-        text-align: center;
         color: #ff99cc;
         margin-bottom: 30px;
         font-size: 1.1em;
@@ -197,6 +196,35 @@
       .stats-link a:hover {
         text-decoration: underline;
       }
+
+      .rules summary {
+          cursor: pointer;
+          user-select: none;
+          font-weight: bold;
+          font-size: 1.1em;
+          list-style: none;
+          position: relative;
+          padding-left: 20px;
+      }
+
+      /* Remove default triangle */
+      .rules summary::-webkit-details-marker {
+          display: none;
+      }
+      .rules summary::marker {
+          display: none;
+      }
+
+      /* Add custom + / − */
+      .rules summary::before {
+          content: "+";
+          position: absolute;
+          left: 0;
+      }
+
+      .rules[open] summary::before {
+          content: "−";
+      }
     </style>
   </head>
 <body>
@@ -208,7 +236,20 @@
 
   <div class="container">
     <h2>💕 Baby Name Guess 💕</h2>
-    <p class="subtitle">See if you can guess our perfect name!</p>
+    <p style="text-align: center" class="subtitle">See if you can guess our perfect name!</p>
+
+    <details class="rules subtitle">
+      <summary>Rules recap! (click to expand)</summary>
+      <ul style="margin-top: 10px; padding-left: 20px">
+          <li>$1 per name guess (send to Venmo: @Jame-Sanburn <span style="white-space: nowrap;">(269-377-9869)</span>)</li>
+          <li>You can submit as many guesses as you like ($1 per guess).</li>
+          <li>Similar names, nicknames, and variations all count as the same guess. If you guess any version of a name—like James, Jame, Jamie, or Jimmy—you'll still win if the baby's name is any of those. So no need to submit multiple guesses for name variations.</li>
+          <li>If you're not sure, feel free to list the ones you're thinking of (e.g., “Ash, Ashley, Ashleigh, Ashlie, Ahsley”) in one guess/line.</li>
+          <li>Guessing closes when Mike/Emily confirm/release the name or have the baby!</li>
+          <li>After the baby is born, 50% of the pool goes to Mike/Emily and 50% is split among anyone who correctly guessed the name at least once.</li>
+          <li>If no one guesses correctly, we'll consider closest guesses, or donate the winnings to Mike/Emily if no one's close!</li>
+      </ul>
+    </details>
 
     <div class="form-group">
       <label>Full Name or Email:</label>
