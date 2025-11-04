@@ -80,6 +80,7 @@
       .subtitle {
         color: #ff99cc;
         margin-bottom: 30px;
+        display: block;
         font-size: 1.1em;
       }
 
@@ -87,7 +88,6 @@
         color: #ff69b4;
         font-weight: 600;
         font-size: 1.1em;
-        display: block;
         margin-bottom: 10px;
       }
 
@@ -225,6 +225,12 @@
       .rules[open] summary::before {
           content: "−";
       }
+
+      .stat-row label,
+      .stat-row #guessCount,
+      .stat-row #popularGuess {
+          display: inline-block;
+      }
     </style>
   </head>
 <body>
@@ -237,6 +243,15 @@
   <div class="container">
     <h2>💕 Baby Name Guess 💕</h2>
     <p style="text-align: center" class="subtitle">See if you can guess our perfect name!</p>
+
+    <div class="stat-row">
+      <label>Current guess count:</label>
+      <div id="guessCount" class="subtitle total-guesses" style="margin-bottom: 0">Loading...</div>
+    </div>
+    <div class="stat-row">
+      <label>Most Guesses:</label>
+      <div id="popularGuess" class="subtitle popular-guess" style="margin-bottom: 0">Loading...</div>
+    </div>
 
     <details class="rules subtitle">
       <summary>Rules recap! (click to expand)</summary>
@@ -329,6 +344,35 @@
         alert("Error submitting guesses.");
       }
     });
+
+    async function updateGuessCount() {
+      try {
+        const res = await fetch("/count");
+        const data = await res.json();
+        document.getElementById("guessCount").textContent =
+          `${data.count}`;
+      } catch {
+        document.getElementById("guessCount").textContent = "Error loading count";
+      }
+    }
+
+    async function updatePopularGuess() {
+      try {
+        const res = await fetch("/popular");
+        const data = await res.json();
+        const el = document.getElementById("popularGuess");
+        if (data.name_guess)
+          el.textContent = `${data.name_guess} (${data.count})`;
+        else
+          el.textContent = "No name has been guessed twice.";
+      } catch {
+        document.getElementById("popularGuess").textContent = "Error loading popular guess";
+      }
+    }
+
+    updateGuessCount();
+    updatePopularGuess();
+
   </script>
 </body>
 </html>

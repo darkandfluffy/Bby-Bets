@@ -57,6 +57,28 @@ app.post("/guess", async (req, res) => {
   }
 });
 
+app.get("/count", async (req, res) => {
+  const result = await pool.query("SELECT COUNT(*) FROM guesses");
+  res.json({ count: parseInt(result.rows[0].count, 10) });
+});
+
+app.get("/popular", async (req, res) => {
+  const result = await pool.query(`
+    SELECT name_guess, COUNT(*) AS count
+    FROM guesses
+    GROUP BY name_guess
+    HAVING count(*) > 1
+    ORDER BY count DESC, name_guess ASC
+    LIMIT 1
+  `);
+  if (result.rows.length === 0) {
+    return res.json({ name_guess: null, count: 0 });
+  }
+
+  const top = result.rows[0];
+  return res.json({ name_guess: top.name_guess, count: parseInt(top.count, 10) });
+});
+
 app.get("/stats", async (req, res) => {
   try {
     const guesses = await loadGuesses();
